@@ -52,14 +52,14 @@ let api = PayselectionAPI(merchantCredentials: merchantCreds)
 
 ### Оплата с использованием Payselection SDK:
 
-1. Создайте экземпляр структуры CustomerInfo с информацией о клиенте, обязательным является лишь поле "ip", остальные - опциональные.
+1. Если необходимо, создайте экземпляр структуры CustomerInfo с информацией о клиенте.
 
 ```
-let customerInfo = CustomerInfo(ip: "10.0.42.42")
+let customerInfo = CustomerInfo(email: "customer@example.com")
 ```
 
 
-2. Создайте экземпляр структуры PaymentFormData с информацией о транзакции и данными карты, передав туда customerInfo. Внимание! Все поля обязательны для заполнения. Так же необходимо валидировать передаваемые данные, иначе сервер вернет ошибку. Подробнее о форматах можно прочесть в документации  [Payselection API](https://api.payselection.com/#section/Request-signature).
+2. Создайте экземпляр структуры PaymentFormData с информацией о транзакции и данными карты, передав туда customerInfo, если требуется. Внимание! Необходимо валидировать передаваемые данные, иначе сервер вернет ошибку. Подробнее о форматах можно прочесть в документации  [Payselection API](https://api.payselection.com/#section/Request-signature).
 
 ```
  let messageExpiration = String(Int64(Date().timeIntervalSince1970 * 1000 + 86400000)) // 24 часа 
@@ -94,11 +94,34 @@ let customerInfo = CustomerInfo(ip: "10.0.42.42")
         //
 ```
 
-5. Отобразите WebView с полученной ссылкой на веб-интерфейс платежной системы (параметр "redirectUrl" возвращается в ответе метода "pay")
+5. Отобразите WebView с полученной ссылкой на веб-интерфейс платежной системы (параметр "redirectUrl" возвращается в ответе метода "pay") удобным для вас способом. Для этого создайте объект класса ThreeDsProcessor:
 
 ```
-
+ let threeDsProcessor = ThreeDsProcessor()
 ```
+ и реализуйте протокол TreeDsListenerDelegate для получения объекта WKWebView и прослушивания статуса транзакции:
+ 
+ ```
+ threeDsProcessor.delegate = yourClassInstance
+ 
+ extension YourClassName: TreeDsListenerDelegate {
+ 
+     func willPresentWebView(_ webView: WKWebView) {
+        self.webViewVC = YourWebViewController(webView: webView)
+        self.present(webViewVC, animated: true)
+    }
+    
+    func onAuthorizationCompleted() {
+        webViewVC?.dismiss(animated: true)  // закройте web view в случае успеха
+    }
+    
+    func onAuthorizationFailed(error: Error) {
+        webViewVC?.dismiss(animated: true)  // закройте web view в случае неудачи
+        print(error) // обработайте ошибку, если потребуется
+    }
+}
+```
+
 ### Другие методы Payselection API:
 
 1. Получение статуса одной транзакции

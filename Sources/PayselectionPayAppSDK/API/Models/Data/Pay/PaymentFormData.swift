@@ -20,6 +20,8 @@ public struct PaymentFormData {
     public var orderId: String
     public var description: String
     public var customerInfo: CustomerInfo?
+    public var receiptData: ReceiptData?
+    public var rebillFlag: Bool?
     
     public init(amount: String,
                 currency: String,
@@ -31,7 +33,9 @@ public struct PaymentFormData {
                 messageExpiration: String,
                 orderId: String,
                 description: String,
-                customerInfo: CustomerInfo?) {
+                customerInfo: CustomerInfo? = nil,
+                receiptData: ReceiptData? = nil,
+                rebillFlag: Bool? = nil) {
         self.amount = amount
         self.currency = currency
         self.cardNumber = cardNumber
@@ -43,5 +47,7 @@ public struct PaymentFormData {
         self.orderId = orderId
         self.description = description
         self.customerInfo = customerInfo
+        self.receiptData = receiptData
+        self.rebillFlag = rebillFlag
     }
 }

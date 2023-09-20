@@ -7,16 +7,11 @@
 
 import Foundation
 
-public struct PaymentDetails: Codable {
-    var type: PaymentDetailsType
-    var payToken: String
+struct PaymentDetails: Codable {
+
+    var value: String
     
     enum CodingKeys: String, CodingKey {
-        case type = "Type"
-        case payToken = "PayToken"
+        case value = "Value"
     }
-}
-
-public enum PaymentDetailsType: String, Codable {
-    case `internal` = "Internal"
 }

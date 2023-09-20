@@ -35,8 +35,9 @@ struct PaymentData: Codable {
 }
 
 enum PaymentMethod: String, Codable {
-    case card = "Card"
+    case cryptogram = "Cryptogram"
     case token = "Token"
+    case qr = "QR"
 }
 
 

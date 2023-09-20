@@ -29,7 +29,7 @@ public class PayselectionAPI {
         
         let transactionDetails = TransactionDetails(amount: paymentFormData.amount, currency: paymentFormData.currency)
         let secretPaymentDetails = PaymentPrivateDetails(transactionDetails: transactionDetails,
-                                                         paymentMethod: .token,
+                                                         paymentMethod: .cryptogram,
                                                          paymentDetails: cardDetails,
                                                          messageExpiration: paymentFormData.messageExpiration)
         
@@ -41,13 +41,15 @@ public class PayselectionAPI {
         
         let customerInfo = getCustomerInfo(paymentFormData.customerInfo)
         
-        let paymentDetails = PaymentDetails(type: .internal , payToken: token)
+        let paymentDetails = PaymentDetails(value: token)
         let paymentData = PaymentData(orderId: paymentFormData.orderId,
                                       amount: transactionDetails.amount,
                                       currency: transactionDetails.currency,
                                       description: paymentFormData.description,
+                                      rebillFlag: paymentFormData.rebillFlag,
                                       customerInfo: customerInfo,
-                                      paymentMethod: .token,
+                                      paymentMethod: .cryptogram,
+                                      receiptData: paymentFormData.receiptData,
                                       paymentDetails: paymentDetails)
         
         guard let requestBodyString = self.getRequestBody(from: paymentData) else { return }

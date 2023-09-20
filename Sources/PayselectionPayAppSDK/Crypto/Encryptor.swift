@@ -28,9 +28,9 @@ struct Encryptor {
         
         do {
             let ephemeralPrivateKey = try secp256k1.Signing.PrivateKey(format: .uncompressed)
-            let ephemeralPublicKey = [UInt8](ephemeralPrivateKey.publicKey.rawRepresentation)
+            let ephemeralPublicKey = [UInt8](ephemeralPrivateKey.publicKey.dataRepresentation)
             let sharedSecret = try derive(pubKey: pubKeyBytes,
-                                          ephemeralPrivateKey: [UInt8](ephemeralPrivateKey.rawRepresentation))
+                                          ephemeralPrivateKey: [UInt8](ephemeralPrivateKey.dataRepresentation))
             let sharedKeyHash = Hash.sha512(sharedSecret)
 
             let iv = AES.randomIV(AES.blockSize)
@@ -63,7 +63,7 @@ struct Encryptor {
     
     private func derive(pubKey: [UInt8], ephemeralPrivateKey: [UInt8]) throws -> [UInt8] {
         do {
-            let publicKey = try secp256k1.Signing.PublicKey(rawRepresentation: pubKey, format: .uncompressed)
+            let publicKey = try secp256k1.Signing.PublicKey(dataRepresentation: pubKey, format: .uncompressed)
             let sharedPoint = try publicKey.multiply(ephemeralPrivateKey, format: .uncompressed)
             return sharedPoint.xonly.bytes
         } catch {
