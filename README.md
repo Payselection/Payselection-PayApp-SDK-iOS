@@ -112,16 +112,16 @@ let customerInfo = CustomerInfo(email: "customer@example.com")
     }
     
     func onAuthorizationCompleted() {
-        webViewVC?.dismiss(animated: true)  // закройте web view в случае успеха
+        self.webViewVC.dismiss(animated: true)  // закройте web view в случае успеха
     }
     
     func onAuthorizationFailed(error: Error) {
-        webViewVC?.dismiss(animated: true)  // закройте web view в случае неудачи
+        self.webViewVC.dismiss(animated: true)  // закройте web view в случае неудачи
         print(error) // обработайте ошибку, если потребуется
     }
 }
 ```
-совершите подтверждение платежа
+совершите подтверждение платежа:
 
 ```
  guard let url = URL(string: payResult.redirectUrl) else { return }
