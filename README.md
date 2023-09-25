@@ -121,6 +121,13 @@ let customerInfo = CustomerInfo(email: "customer@example.com")
     }
 }
 ```
+совершите подтверждение платежа
+
+```
+ guard let url = URL(string: payResult.redirectUrl) else { return }
+ threeDsProcessor.confirm3DSpayment(withUrl: url) 
+```
+
 
 ### Другие методы Payselection API:
 
