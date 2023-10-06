@@ -165,6 +165,8 @@ public class PayselectionAPI {
     private func getCustomerInfo(_ customerInfo: CustomerInfo?) -> CustomerInfo {
         guard let info = customerInfo, let _ = info.ip else {
             let cInfo = CustomerInfo(email: customerInfo?.email,
+                                     receiptEmail: customerInfo?.receiptEmail,
+                                     isSendReceipt: customerInfo?.isSendReceipt,
                                      phone: customerInfo?.phone,
                                      language: customerInfo?.language,
                                      address: customerInfo?.address,
