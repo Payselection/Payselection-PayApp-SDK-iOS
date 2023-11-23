@@ -99,12 +99,12 @@ let customerInfo = CustomerInfo(email: "customer@example.com")
 ```
  let threeDsProcessor = ThreeDsProcessor()
 ```
- и реализуйте протокол TreeDsListenerDelegate для получения объекта WKWebView и прослушивания статуса транзакции:
+ и реализуйте протокол ThreeDsListenerDelegate для получения объекта WKWebView и прослушивания статуса транзакции:
  
  ```
  threeDsProcessor.delegate = yourClassInstance
  
- extension YourClassName: TreeDsListenerDelegate {
+ extension YourClassName: ThreeDsListenerDelegate {
  
      func willPresentWebView(_ webView: WKWebView) {
         self.webViewVC = YourWebViewController(webView: webView)
