@@ -9,16 +9,9 @@ import Foundation
 
 struct PaymentDetails: Codable {
 
-    // Cryptogram
-    var cryptogramValue: String?
-
-    // Token
-    var tokenType: String?
-    var tokenPay: String?
-
+    var value: String
+    
     enum CodingKeys: String, CodingKey {
-        case cryptogramValue = "Value"
-        case tokenType = "Type"
-        case tokenPay = "PayToken"
+        case value = "Value"
     }
 }
