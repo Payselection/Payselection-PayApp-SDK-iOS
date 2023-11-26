@@ -1,28 +1,19 @@
 //
-//  PaymentFormData.swift
-//  PayselectionPayAppSDK
+//  File.swift
+//  
 //
-//  Created by Alexander Kogalovsky on 4.11.22.
+//  Created by Pavel Sukalin on 23.11.23.
 //
 
 import Foundation
 
-public struct PaymentFormData {
-    
-    public var amount: String
-    public var currency: String
+public class PaymentCryptogramFormData: PaymentFormData {
     public var cardNumber: String
     public var cardExpMonth: String
     public var cardExpYear: String
     public var cardHolderName: String
     public var cvc: String
-    public var messageExpiration: String
-    public var orderId: String
-    public var description: String
-    public var customerInfo: CustomerInfo?
-    public var receiptData: ReceiptData?
-    public var rebillFlag: Bool?
-    
+
     public init(amount: String,
                 currency: String,
                 cardNumber: String,
@@ -36,18 +27,12 @@ public struct PaymentFormData {
                 customerInfo: CustomerInfo? = nil,
                 receiptData: ReceiptData? = nil,
                 rebillFlag: Bool? = nil) {
-        self.amount = amount
-        self.currency = currency
         self.cardNumber = cardNumber
         self.cardExpMonth = cardExpMonth
         self.cardExpYear = cardExpYear
         self.cardHolderName = cardHolderName
         self.cvc = cvc
-        self.messageExpiration = messageExpiration
-        self.orderId = orderId
-        self.description = description
-        self.customerInfo = customerInfo
-        self.receiptData = receiptData
-        self.rebillFlag = rebillFlag
+
+        super.init(amount: amount, currency: currency, messageExpiration: messageExpiration, orderId: orderId, description: description, customerInfo: customerInfo, receiptData: receiptData, rebillFlag: rebillFlag)
     }
 }

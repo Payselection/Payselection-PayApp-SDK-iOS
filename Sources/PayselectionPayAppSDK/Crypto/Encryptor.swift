@@ -10,7 +10,7 @@ import CryptoSwift
 import secp256k1
 
 struct Encryptor {
-    
+
     func makeCryptogram(publicKey: String, privateDetails: PaymentPrivateDetails) throws -> String {
         do {
             let message = try getJSONString(from: privateDetails)
@@ -19,13 +19,12 @@ struct Encryptor {
             throw error
         }
     }
-        
+
     private func encrypt(pubKey: String, message: String) throws -> String {
         
         let messageBytes = [UInt8](message.data(using: .utf8)!)
         let pubKeyBytes = Array(hex: pubKey)
-     
-        
+
         do {
             let ephemeralPrivateKey = try secp256k1.Signing.PrivateKey(format: .uncompressed)
             let ephemeralPublicKey = [UInt8](ephemeralPrivateKey.publicKey.dataRepresentation)

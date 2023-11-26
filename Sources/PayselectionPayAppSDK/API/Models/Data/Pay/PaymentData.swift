@@ -18,7 +18,7 @@ struct PaymentData: Codable {
     var extraData: ExtraData?
     var paymentMethod: PaymentMethod
     var receiptData: ReceiptData?
-    var paymentDetails: PaymentDetails
+    var paymentDetails: PaymentDetails?
     
     enum CodingKeys: String, CodingKey {
         case orderId = "OrderId"
@@ -39,18 +39,3 @@ enum PaymentMethod: String, Codable {
     case token = "Token"
     case qr = "QR"
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
