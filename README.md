@@ -10,7 +10,7 @@ PaySelection PayApp SDK позволяет интегрировать прием
 
 ```
  dependencies: [
-  .package(url: "https://github.com/Payselection/Payselection-PayApp-SDK-iOS", from: "3.0.1"),
+  .package(url: "https://github.com/Payselection/Payselection-PayApp-SDK-iOS", from: "3.0.2"),
   ]
 ```
 
@@ -64,23 +64,23 @@ let customerInfo = CustomerInfo(email: "customer@example.com")
 ```
  let messageExpiration = String(Int64(Date().timeIntervalSince1970 * 1000 + 86400000)) // 24 часа 
  
- let paymentFormData = PaymentFormData(amount: "123",
-                                       currency: .rub,
-                                       cardNumber: "4129436949329530",
-                                       cardExpMonth: "06",
-                                       cardExpYear: "24",
-                                       cardHolderName: "Card Holder",
-                                       cvc: "321",
-                                       messageExpiration: messageExpiration, // строковое значение времени в миллисекундах, пример получения указан выше
-                                       orderId: "",                          // уникальный номер заказа. Можно использовать UUID().uuidString
-                                       description: "My Transaction",        // строка должна быть не пустой, иначе сервер вернет ошибку
-                                       customerInfo: customerInfo)
+ let paymentFormData = PaymentCryptogramFormData(amount: "123",
+                                               currency: .rub,
+                                             cardNumber: "4129436949329530",
+                                           cardExpMonth: "06",
+                                            cardExpYear: "24",
+                                         cardHolderName: "Card Holder",
+                                                    cvc: "321",
+                                      messageExpiration: messageExpiration, // строковое значение времени в миллисекундах, пример получения указан выше
+                                                orderId: "",                // уникальный номер заказа. Можно использовать UUID().uuidString
+                                            description: "My Transaction",  // строка должна быть не пустой, иначе сервер вернет ошибку
+                                           customerInfo: customerInfo)
 ```
 
 4. Вызовите метод pay
 
 ```
- api.pay(paymentFormData: paymentFormData) { result in
+ api.pay(.cryptogram(paymentFormData)) { result in
             switch result {
             case .success(let payResult):
                 // в результате ответа приходят: transactionId, transactionSecretKey и redirectUrl
