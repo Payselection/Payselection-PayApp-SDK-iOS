@@ -8,7 +8,7 @@
 import Foundation
 
 public struct CustomerInfo: Codable {
-    
+
     public var email: String?
     public var receiptEmail: String?
     public var isSendReceipt: Bool?
@@ -19,7 +19,7 @@ public struct CustomerInfo: Codable {
     public var zip: String?
     public var country: String?
     public var ip: String?
-    
+
     enum CodingKeys: String, CodingKey {
         case email = "Email"
         case receiptEmail = "ReceiptEmail"
@@ -28,11 +28,11 @@ public struct CustomerInfo: Codable {
         case language = "Language"
         case address = "Address"
         case town = "Town"
-        case zip = "Zip"
+        case zip = "ZIP"
         case country = "Country"
         case ip = "IP"
     }
-    
+
     public init(email: String? = nil,
                 receiptEmail: String? = nil,
                 isSendReceipt: Bool? = nil,

@@ -9,47 +9,59 @@ import Foundation
 import CryptoKit
 
 public class PayselectionAPI {
-    
     public typealias PayselectionRequestCompletion<T> = (Result<T, Error>) -> Void
-    
+
     private let merchantCreds: MerchantCredentials
-    
+
     public init(merchantCredentials: MerchantCredentials) {
         self.merchantCreds = merchantCredentials
     }
-    
-    public func pay(paymentFormData: PaymentFormData,
-                    completion: @escaping PayselectionRequestCompletion<PayResult>) {
-        
-        let cardDetails = CardDetails(cardNumber: paymentFormData.cardNumber,
-                                      expMonth: paymentFormData.cardExpMonth,
-                                      expYear: paymentFormData.cardExpYear,
-                                      cardholderName: paymentFormData.cardHolderName,
-                                      cvc: paymentFormData.cvc)
-        
-        let transactionDetails = TransactionDetails(amount: paymentFormData.amount, currency: paymentFormData.currency)
-        let secretPaymentDetails = PaymentPrivateDetails(transactionDetails: transactionDetails,
-                                                         paymentMethod: .cryptogram,
-                                                         paymentDetails: cardDetails,
-                                                         messageExpiration: paymentFormData.messageExpiration)
-        
-        guard let token = try? Encryptor().makeCryptogram(publicKey: merchantCreds.publicKey,
-                                                          privateDetails: secretPaymentDetails) else {
-            completion(.failure(PayselectionError.encryptionError))
-            return
+
+    public func pay(_ paymentFormDataType: PaymentFormDataType, 
+                               completion: @escaping PayselectionRequestCompletion<PayResult>) {
+        var paymentDetails: PaymentDetails? = nil
+        var formData: PaymentFormData!
+
+        // type
+        switch paymentFormDataType {
+        case .cryptogram(let data):
+            formData = data
+            let cardDetails = CardDetails(cardNumber: data.cardNumber,
+                                          expMonth: data.cardExpMonth,
+                                          expYear: data.cardExpYear,
+                                          cardholderName: data.cardHolderName,
+                                          cvc: data.cvc)
+            let transactionDetails = TransactionDetails(amount: data.amount, currency: data.currency)
+            let secretPaymentDetails = PaymentPrivateDetails(transactionDetails: transactionDetails,
+                                                                  paymentMethod: .cryptogram,
+                                                                 paymentDetails: cardDetails,
+                                                              messageExpiration: data.messageExpiration)
+            
+            guard let token = try? Encryptor().makeCryptogram(publicKey: merchantCreds.publicKey,
+                                                              privateDetails: secretPaymentDetails) else {
+                completion(.failure(PayselectionError.encryptionError))
+                return
+            }
+            paymentDetails = PaymentDetails(cryptogramValue: token)
+            break
+        case .token(let data):
+            formData = data
+            paymentDetails = PaymentDetails(tokenType: data.type.rawValue, tokenPay: data.payToken)
+            break
+        case .qr(let data):
+            formData = data
+            break
         }
-        
-        let customerInfo = getCustomerInfo(paymentFormData.customerInfo)
-        
-        let paymentDetails = PaymentDetails(value: token)
-        let paymentData = PaymentData(orderId: paymentFormData.orderId,
-                                      amount: transactionDetails.amount,
-                                      currency: transactionDetails.currency,
-                                      description: paymentFormData.description,
-                                      rebillFlag: paymentFormData.rebillFlag,
-                                      customerInfo: customerInfo,
-                                      paymentMethod: .cryptogram,
-                                      receiptData: paymentFormData.receiptData,
+
+        // Public Pay
+        let paymentData = PaymentData(orderId: formData.orderId,
+                                      amount: formData.amount,
+                                      currency: formData.currency,
+                                      description: formData.description,
+                                      rebillFlag: formData.rebillFlag,
+                                      customerInfo: getCustomerInfo(formData.customerInfo),
+                                      paymentMethod: paymentFormDataType.paymentMethod,
+                                      receiptData: formData.receiptData,
                                       paymentDetails: paymentDetails)
         
         guard let requestBodyString = self.getRequestBody(from: paymentData) else { return }
