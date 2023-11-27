@@ -8,7 +8,7 @@
 import Foundation
 
 public enum PaymentTokenDataType: String {
-    case yandex
+    case yandex = "Yandex"
 }
 
 public class PaymentTokenFormData: PaymentFormData {
