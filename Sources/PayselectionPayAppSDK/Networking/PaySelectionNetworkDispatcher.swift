@@ -47,7 +47,7 @@ class PayselectionURLSessionNetworkDispatcher: NSObject, PayselectionNetworkDisp
                 return
             }
         }
-        
+
         var headers = request.headers
         headers["Content-Type"] = "application/json"
         urlRequest.allHTTPHeaderFields = headers

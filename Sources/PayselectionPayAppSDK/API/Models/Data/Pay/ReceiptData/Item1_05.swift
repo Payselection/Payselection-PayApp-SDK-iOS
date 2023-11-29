@@ -1,22 +1,18 @@
 //
-//  Item.swift
-//  
+//  Item1_05.swift
 //
-//  Created by Alexander Kogalovsky on 20.09.23.
+//
+//  Created by on 27.11.23.
 //
 
 import Foundation
 
-public struct Item: Codable {
-    
+public struct Item1_05: Codable {
     public var name: String
     public var price: Double
     public var quantity: Double
     public var sum: Double
-    public var measurementUnit: String?
     public var paymentMethod: ReceiptPaymentMethod
-    public var paymentObject: ReceiptPaymentObject
-    public var nomenclatureCode: String?
     public var vat: Vat
     public var agentInfo: AgentInfo?
     public var supplierInfo: SupplierInfo?
@@ -24,15 +20,16 @@ public struct Item: Codable {
     public var excise: Double?
     public var countryCode: String?
     public var declarationNumber: String?
-    
+    public var measurementUnit: String?
+    public var paymentObject: ReceiptPaymentObject
+    public var nomenclatureCode: String?
+
     enum CodingKeys: String, CodingKey {
         case name
         case price
         case quantity
         case sum
-        case measurementUnit = "measurement_unit"
         case paymentMethod = "payment_method"
-        case paymentObject = "payment_object"
         case nomenclatureCode = "nomenclature_code"
         case vat
         case agentInfo = "agent_info"
@@ -41,31 +38,16 @@ public struct Item: Codable {
         case excise
         case countryCode = "country_code"
         case declarationNumber = "declaration_number"
+        case measurementUnit = "measurement_unit"
+        case paymentObject = "payment_object"
     }
     
-    public init(name: String,
-                price: Double,
-                quantity: Double,
-                sum: Double,
-                measurementUnit: String? = nil,
-                paymentMethod: ReceiptPaymentMethod,
-                paymentObject: ReceiptPaymentObject,
-                nomenclatureCode: String? = nil,
-                vat: Vat,
-                agentInfo: AgentInfo? = nil,
-                supplierInfo: SupplierInfo? = nil,
-                userData: String? = nil,
-                excise: Double? = nil,
-                countryCode: String? = nil,
-                declarationNumber: String? = nil) {
+    public init(name: String, price: Double, quantity: Double, sum: Double, paymentMethod: ReceiptPaymentMethod, vat: Vat, agentInfo: AgentInfo? = nil, supplierInfo: SupplierInfo? = nil, userData: String? = nil, excise: Double? = nil, countryCode: String? = nil, declarationNumber: String? = nil, measurementUnit: String? = nil, paymentObject: ReceiptPaymentObject, nomenclatureCode: String? = nil) {
         self.name = name
         self.price = price
         self.quantity = quantity
         self.sum = sum
-        self.measurementUnit = measurementUnit
         self.paymentMethod = paymentMethod
-        self.paymentObject = paymentObject
-        self.nomenclatureCode = nomenclatureCode
         self.vat = vat
         self.agentInfo = agentInfo
         self.supplierInfo = supplierInfo
@@ -73,6 +55,9 @@ public struct Item: Codable {
         self.excise = excise
         self.countryCode = countryCode
         self.declarationNumber = declarationNumber
+        self.measurementUnit = measurementUnit
+        self.paymentObject = paymentObject
+        self.nomenclatureCode = nomenclatureCode
     }
 }
 

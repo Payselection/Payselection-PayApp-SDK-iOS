@@ -26,6 +26,7 @@ public class PaymentCryptogramFormData: PaymentFormData {
                 description: String,
                 customerInfo: CustomerInfo? = nil,
                 receiptData: ReceiptData? = nil,
+                extraData: ExtraData? = nil,
                 rebillFlag: Bool? = nil) {
         self.cardNumber = cardNumber
         self.cardExpMonth = cardExpMonth
@@ -33,6 +34,14 @@ public class PaymentCryptogramFormData: PaymentFormData {
         self.cardHolderName = cardHolderName
         self.cvc = cvc
 
-        super.init(amount: amount, currency: currency, messageExpiration: messageExpiration, orderId: orderId, description: description, customerInfo: customerInfo, receiptData: receiptData, rebillFlag: rebillFlag)
+        super.init(amount: amount, 
+                   currency: currency,
+                   messageExpiration: messageExpiration,
+                   orderId: orderId, 
+                   description: description,
+                   customerInfo: customerInfo, 
+                   receiptData: receiptData,
+                   extraData: extraData,
+                   rebillFlag: rebillFlag)
     }
 }

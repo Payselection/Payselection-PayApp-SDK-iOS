@@ -32,9 +32,18 @@ public class PaymentFormData {
     public var description: String
     public var customerInfo: CustomerInfo?
     public var receiptData: ReceiptData?
+    public var extraData: ExtraData?
     public var rebillFlag: Bool?
 
-    public init(amount: String, currency: String, messageExpiration: String, orderId: String, description: String, customerInfo: CustomerInfo?, receiptData: ReceiptData?, rebillFlag: Bool?) {
+    public init(amount: String, 
+                currency: String,
+                messageExpiration: String,
+                orderId: String,
+                description: String,
+                customerInfo: CustomerInfo?,
+                receiptData: ReceiptData?,
+                extraData: ExtraData?,
+                rebillFlag: Bool?) {
         self.amount = amount
         self.currency = currency
         self.messageExpiration = messageExpiration
@@ -42,6 +51,7 @@ public class PaymentFormData {
         self.description = description
         self.customerInfo = customerInfo
         self.receiptData = receiptData
+        self.extraData = extraData
         self.rebillFlag = rebillFlag
     }
 }

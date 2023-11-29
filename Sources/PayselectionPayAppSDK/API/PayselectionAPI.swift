@@ -17,7 +17,8 @@ public class PayselectionAPI {
         self.merchantCreds = merchantCredentials
     }
 
-    public func pay(_ paymentFormDataType: PaymentFormDataType, 
+    public func pay(_ paymentFormDataType: PaymentFormDataType,
+                              receiptType: ReceiptType? = nil,
                                completion: @escaping PayselectionRequestCompletion<PayResult>) {
         var paymentDetails: PaymentDetails? = nil
         var formData: PaymentFormData!
@@ -53,32 +54,52 @@ public class PayselectionAPI {
             break
         }
 
-        // Public Pay
         let paymentData = PaymentData(orderId: formData.orderId,
                                       amount: formData.amount,
                                       currency: formData.currency,
                                       description: formData.description,
                                       rebillFlag: formData.rebillFlag,
                                       customerInfo: getCustomerInfo(formData.customerInfo),
+                                      extraData: formData.extraData,
                                       paymentMethod: paymentFormDataType.paymentMethod,
-                                      receiptData: formData.receiptData,
                                       paymentDetails: paymentDetails)
+        // With Receipt Type ( ffd1.05 or ffd1.2 )
+        if let receiptType {
+            switch receiptType {
+            case .ffd1_05(let timestamp, let externalId, let receipt):
+                let ffd1_05PaymentData = PaymentFFD1_05Data(paymentData: paymentData,
+                                                            receiptData: ReceiptFFD1_05Data(timestamp: timestamp,
+                                                                                            externalId: externalId,
+                                                                                            receipt: receipt))
+                request(ffd1_05PaymentData)
+
+            case .ffd1_2(let timestamp, let externalId, let receipt):
+                let ffd1_2PaymentData = PaymentFFD1_2Data(paymentData: paymentData,
+                                                          receiptData: ReceiptFFD1_2Data(timestamp: timestamp,
+                                                                                         externalId: externalId,
+                                                                                         receipt: receipt))
+                request(ffd1_2PaymentData)
+            }
+        } else {
+            request(paymentData)
+        }
         
-        guard let requestBodyString = self.getRequestBody(from: paymentData) else { return }
-        let headers = self.generatePayHeaders(merchantId: self.merchantCreds.merchantId,
-                                              requestURL: PayselectionHTTPResource.pay.rawValue,
-                                              requestBody: requestBodyString)
-        let request = PayRequest(path: self.merchantCreds.networkConfig.serverUrl,
-                                 body: paymentData,
-                                 headers: headers)
-        request.execute(
-            onSuccess: { result in
-                completion(.success(result))
-            },
-            onError: { error in
-                completion(.failure(error))
+        func request(_ data: Codable) {
+            guard let requestBodyString = self.getRequestBody(from: data) else { return }
+
+            let headers = self.generatePayHeaders(merchantId: self.merchantCreds.merchantId,
+                                                  requestURL: PayselectionHTTPResource.pay.rawValue,
+                                                  requestBody: requestBodyString)
+            let request = PayRequest(path: self.merchantCreds.networkConfig.serverUrl, 
+                                     body: data,
+                                     headers: headers)
+            request.execute(
+                onSuccess: { result in
+                    completion(.success(result))
+                }, onError: { error in
+                    completion(.failure(error))
             })
-        
+        }
     }
 
     public func getTransactionStatus(transactionId: String,
@@ -221,5 +242,4 @@ public class PayselectionAPI {
         return address ?? "10.0.42.42"
     }
 }
-
 

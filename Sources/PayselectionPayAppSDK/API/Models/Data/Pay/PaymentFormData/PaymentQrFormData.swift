@@ -15,7 +15,16 @@ public class PaymentQRFormData: PaymentFormData {
                     description: String,
                    customerInfo: CustomerInfo? = nil,
                     receiptData: ReceiptData? = nil,
+                      extraData: ExtraData? = nil,
                      rebillFlag: Bool? = nil) {
-        super.init(amount: amount, currency: currency, messageExpiration: messageExpiration, orderId: orderId, description: description, customerInfo: customerInfo, receiptData: receiptData, rebillFlag: rebillFlag)
+        super.init(amount: amount,
+                   currency: currency,
+                   messageExpiration: messageExpiration,
+                   orderId: orderId,
+                   description: description,
+                   customerInfo: customerInfo,
+                   receiptData: receiptData,
+                   extraData: extraData,
+                   rebillFlag: rebillFlag)
     }
 }

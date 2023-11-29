@@ -8,12 +8,12 @@
 import Foundation
 
 public struct Client: Codable {
-    
+
     public var name: String?
     public var inn: String?
     public var email: String?
     public var phone: String?
-    
+
     public init(name: String? = nil,
                 inn: String? = nil,
                 email: String? = nil,

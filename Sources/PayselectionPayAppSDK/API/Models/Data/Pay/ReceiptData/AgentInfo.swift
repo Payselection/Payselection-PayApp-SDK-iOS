@@ -45,8 +45,12 @@ public struct PayingAgent: Codable {
 }
 
 public struct ReceivePaymentsOperator: Codable {
-    
+
     public var phones: [String]?
+
+    public init(phones: [String]? = nil) {
+        self.phones = phones
+    }
 }
 
 public struct MoneyTransferOperator: Codable {
