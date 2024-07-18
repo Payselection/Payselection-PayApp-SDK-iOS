@@ -9,7 +9,9 @@ import Foundation
 import CryptoSwift
 import secp256k1
 
-struct Encryptor {
+public struct Encryptor {
+
+    public init() {}
 
     func makeCryptogram(publicKey: String, privateDetails: PaymentPrivateDetails) throws -> String {
         do {
@@ -79,7 +81,7 @@ struct Encryptor {
         }
     }
     
-    private func getJSONString(from object: Codable) throws -> String {
+    public func getJSONString(from object: Codable) throws -> String {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .withoutEscapingSlashes
         do {
@@ -88,5 +90,24 @@ struct Encryptor {
         } catch {
             throw error
         }
+    }
+
+    public func encrypt(plainText: String, publicKey: SecKey) -> String? {
+        guard let data = plainText.data(using: .utf8) else { return nil }
+
+        let algorithm: SecKeyAlgorithm = .rsaEncryptionOAEPSHA256
+
+        guard SecKeyIsAlgorithmSupported(publicKey, .encrypt, algorithm) else { return nil }
+        var error: Unmanaged<CFError>?
+
+        guard let cipherData = SecKeyCreateEncryptedData(publicKey,
+                                                         algorithm,
+                                                         data as CFData,
+                                                         &error) as Data? else {
+                                                            print("Encryption error: \((error?.takeRetainedValue())!)")
+                                                            return nil
+        }
+
+        return cipherData.base64EncodedString()
     }
 }

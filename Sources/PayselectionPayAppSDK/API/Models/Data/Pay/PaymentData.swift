@@ -103,4 +103,5 @@ enum PaymentMethod: String, Codable {
     case cryptogram = "Cryptogram"
     case token = "Token"
     case qr = "QR"
+    case cryptogramRSA = "Card"
 }
