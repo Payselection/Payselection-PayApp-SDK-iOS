@@ -52,6 +52,25 @@ public class PayselectionAPI {
         case .qr(let data):
             formData = data
             break
+        case .cryptogramRSA(let data):
+            formData = data
+            let cardDetails = CardDetails(cardNumber: data.cardNumber,
+                                          expMonth: data.cardExpMonth,
+                                          expYear: data.cardExpYear,
+                                          cardholderName: data.cardHolderName,
+                                          cvc: data.cvc)
+            let transactionDetails = TransactionDetails(amount: data.amount, currency: data.currency)
+            let secretPaymentDetails = PaymentPrivateDetails(transactionDetails: transactionDetails,
+                                                                  paymentMethod: .cryptogramRSA,
+                                                                 paymentDetails: cardDetails,
+                                                              messageExpiration: data.messageExpiration)
+
+            guard let token = Encryptor().makeCryptogramRSA(publicKey: merchantCreds.publicRSAKey, privateDetails: secretPaymentDetails) else {
+                completion(.failure(PayselectionError.encryptionError))
+                return
+            }
+            paymentDetails = PaymentDetails(cryptogramValue: token)
+            break
         }
 
         let paymentData = PaymentData(orderId: formData.orderId,

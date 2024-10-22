@@ -11,6 +11,7 @@ public enum PaymentFormDataType {
     case cryptogram(_ value: PaymentCryptogramFormData)
     case token(_ value: PaymentTokenFormData)
     case qr(_ value: PaymentQRFormData)
+    case cryptogramRSA(_ value: PaymentCryptogramFormData)
 
     var paymentMethod: PaymentMethod {
         switch self {
@@ -20,6 +21,8 @@ public enum PaymentFormDataType {
             return .token
         case .qr(_):
             return .qr
+        case .cryptogramRSA(_):
+            return .cryptogramRSA
         }
     }
 }

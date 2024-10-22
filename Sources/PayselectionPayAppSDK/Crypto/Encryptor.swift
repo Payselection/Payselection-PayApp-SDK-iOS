@@ -92,22 +92,71 @@ public struct Encryptor {
         }
     }
 
-    public func encrypt(plainText: String, publicKey: SecKey) -> String? {
-        guard let data = plainText.data(using: .utf8) else { return nil }
+    public func makeCryptogramRSA(publicKey: String, privateDetails: PaymentPrivateDetails) -> String? {
+        guard let secPublicKey = createPublicKey(from: publicKey) else {
+            return nil
+        }
+
+        do {
+            let message = try getJSONString(from: privateDetails)
+            return encryptRSA(message: message, publicKey: secPublicKey)
+        } catch {
+            return nil
+        }
+    }
+
+
+    private func encryptRSA(message: String, publicKey: SecKey) -> String? {
+        guard let messageData = message.data(using: .utf8) else {
+            return nil
+        }
 
         let algorithm: SecKeyAlgorithm = .rsaEncryptionOAEPSHA256
 
-        guard SecKeyIsAlgorithmSupported(publicKey, .encrypt, algorithm) else { return nil }
-        var error: Unmanaged<CFError>?
-
-        guard let cipherData = SecKeyCreateEncryptedData(publicKey,
-                                                         algorithm,
-                                                         data as CFData,
-                                                         &error) as Data? else {
-                                                            print("Encryption error: \((error?.takeRetainedValue())!)")
-                                                            return nil
+        guard SecKeyIsAlgorithmSupported(publicKey, .encrypt, algorithm) else {
+            debugPrint("Encryption error: algorithm is not suppoted")
+            return nil
         }
 
-        return cipherData.base64EncodedString()
+        var error: Unmanaged<CFError>?
+
+        guard let encryptedData = SecKeyCreateEncryptedData(publicKey, algorithm, messageData as CFData, &error) else {
+            debugPrint("Encryption error: \(error?.takeRetainedValue() as Error? ?? NSError())")
+            return nil
+        }
+
+        let encryptedBase64String = (encryptedData as Data).base64EncodedString()
+        return encryptedBase64String
+    }
+
+    private func createPublicKey(from base64String: String) -> SecKey? {
+        guard let keyData = Data(base64Encoded: base64String) else {
+            print("Ошибка: Невозможно декодировать строку Base64.")
+            return nil
+        }
+
+        guard let pemString = String(data: keyData, encoding: .utf8) else {
+            return nil
+        }
+
+       let publicKeyStringWithoutHeaders = pemString
+            .replacingOccurrences(of: "-----BEGIN PUBLIC KEY-----", with: "")
+            .replacingOccurrences(of: "-----END PUBLIC KEY-----", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let publicKeyData = Data(base64Encoded: publicKeyStringWithoutHeaders, options: .ignoreUnknownCharacters)!
+
+
+        let keyDict: [NSString: AnyObject] = [
+            kSecAttrKeyType: kSecAttrKeyTypeRSA,
+            kSecAttrKeyClass: kSecAttrKeyClassPublic,
+            kSecAttrKeySizeInBits: 2048 as AnyObject
+        ]
+        var error: Unmanaged<CFError>?
+        guard let publicKey = SecKeyCreateWithData(publicKeyData as CFData, keyDict as CFDictionary, &error) else {
+            print("Failed to create public key:", error!.takeRetainedValue())
+            return nil
+        }
+        return publicKey
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CardDetails: Codable {
+public struct CardDetails: Codable {
     
     var cardNumber: String
     var expMonth: String
