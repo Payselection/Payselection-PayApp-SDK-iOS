@@ -105,5 +105,5 @@ enum PaymentMethod: String, Codable {
     case qr = "QR"
     case sberPay = "SberPay"
     case externalForm = "ExternalForm"
-    case cryptogramRSA = "СryptogramRSA"
+    case cryptogramRSA = "CryptogramRSA"
 }

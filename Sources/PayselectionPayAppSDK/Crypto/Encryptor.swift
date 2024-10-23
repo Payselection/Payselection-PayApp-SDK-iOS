@@ -10,20 +10,28 @@ import CryptoSwift
 import secp256k1
 
 public struct Encryptor {
-
-    public init() {}
-
     func makeCryptogram(publicKey: String, privateDetails: PaymentPrivateDetails) throws -> String {
         do {
             let message = try getJSONString(from: privateDetails)
-            return try encrypt(pubKey: publicKey, message: message)
+            return try encrypt(message: message, pubKey: publicKey)
         } catch {
             throw error
         }
     }
 
-    private func encrypt(pubKey: String, message: String) throws -> String {
-        
+    func makeCryptogramRSA(publicKey: String, privateDetails: PaymentPrivateDetails) -> String? {
+        guard let publicSecKey = createRSAPublicSecKey(from: publicKey) else {
+            return nil
+        }
+        do {
+            let message = try getJSONString(from: privateDetails)
+            return encryptRSA(message: message, publicKey: publicSecKey)
+        } catch {
+            return nil
+        }
+    }
+
+    private func encrypt(message: String, pubKey: String) throws -> String {
         let messageBytes = [UInt8](message.data(using: .utf8)!)
         let pubKeyBytes = Array(hex: pubKey)
 
@@ -80,41 +88,14 @@ public struct Encryptor {
             throw error
         }
     }
-    
-    public func getJSONString(from object: Codable) throws -> String {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .withoutEscapingSlashes
-        do {
-            let data = try encoder.encode(object)
-            return String(data: data, encoding: .utf8)!
-        } catch {
-            throw error
-        }
-    }
-
-    public func makeCryptogramRSA(publicKey: String, privateDetails: PaymentPrivateDetails) -> String? {
-        guard let secPublicKey = createPublicKey(from: publicKey) else {
-            return nil
-        }
-
-        do {
-            let message = try getJSONString(from: privateDetails)
-            return encryptRSA(message: message, publicKey: secPublicKey)
-        } catch {
-            return nil
-        }
-    }
-
 
     private func encryptRSA(message: String, publicKey: SecKey) -> String? {
         guard let messageData = message.data(using: .utf8) else {
             return nil
         }
-
         let algorithm: SecKeyAlgorithm = .rsaEncryptionOAEPSHA256
 
         guard SecKeyIsAlgorithmSupported(publicKey, .encrypt, algorithm) else {
-            debugPrint("Encryption error: algorithm is not suppoted")
             return nil
         }
 
@@ -129,9 +110,8 @@ public struct Encryptor {
         return encryptedBase64String
     }
 
-    private func createPublicKey(from base64String: String) -> SecKey? {
+    private func createRSAPublicSecKey(from base64String: String) -> SecKey? {
         guard let keyData = Data(base64Encoded: base64String) else {
-            print("Ошибка: Невозможно декодировать строку Base64.")
             return nil
         }
 
@@ -142,21 +122,32 @@ public struct Encryptor {
        let publicKeyStringWithoutHeaders = pemString
             .replacingOccurrences(of: "-----BEGIN PUBLIC KEY-----", with: "")
             .replacingOccurrences(of: "-----END PUBLIC KEY-----", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        let publicKeyData = Data(base64Encoded: publicKeyStringWithoutHeaders, options: .ignoreUnknownCharacters)!
+        guard let publicKeyData = Data(base64Encoded: publicKeyStringWithoutHeaders, options: .ignoreUnknownCharacters) else {
+            return nil
+        }
 
-
-        let keyDict: [NSString: AnyObject] = [
+        let options: [NSString: Any] = [
             kSecAttrKeyType: kSecAttrKeyTypeRSA,
             kSecAttrKeyClass: kSecAttrKeyClassPublic,
-            kSecAttrKeySizeInBits: 2048 as AnyObject
+            kSecAttrKeySizeInBits: 2048
         ]
         var error: Unmanaged<CFError>?
-        guard let publicKey = SecKeyCreateWithData(publicKeyData as CFData, keyDict as CFDictionary, &error) else {
-            print("Failed to create public key:", error!.takeRetainedValue())
+        guard let publicKey = SecKeyCreateWithData(publicKeyData as CFData, options as CFDictionary, &error) else {
+            print("Failed to create public key:", error?.takeRetainedValue())
             return nil
         }
         return publicKey
+    }
+
+    private func getJSONString(from object: Codable) throws -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .withoutEscapingSlashes
+        do {
+            let data = try encoder.encode(object)
+            return String(data: data, encoding: .utf8)!
+        } catch {
+            throw error
+        }
     }
 }
