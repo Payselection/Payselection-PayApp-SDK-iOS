@@ -19,6 +19,7 @@ public struct CustomerInfo: Codable {
     public var zip: String?
     public var country: String?
     public var ip: String?
+    public var userId: String?
 
     enum CodingKeys: String, CodingKey {
         case email = "Email"
@@ -31,6 +32,7 @@ public struct CustomerInfo: Codable {
         case zip = "ZIP"
         case country = "Country"
         case ip = "IP"
+        case userId = "UserId"
     }
 
     public init(email: String? = nil,
@@ -42,7 +44,8 @@ public struct CustomerInfo: Codable {
                 town: String? = nil,
                 zip: String? = nil,
                 country: String? = nil,
-                ip: String? = nil) {
+                ip: String? = nil,
+                userId: String? = nil) {
         self.email = email
         self.receiptEmail = receiptEmail
         self.isSendReceipt = isSendReceipt
@@ -53,5 +56,6 @@ public struct CustomerInfo: Codable {
         self.zip = zip
         self.country = country
         self.ip = ip
+        self.userId = userId
     }
 }
