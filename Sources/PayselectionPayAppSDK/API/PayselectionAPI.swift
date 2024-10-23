@@ -52,6 +52,12 @@ public class PayselectionAPI {
         case .qr(let data):
             formData = data
             break
+        case .sberPay(let data):
+            formData = data
+            break
+        case .externalForm(let data):
+            formData = data
+            break
         case .cryptogramRSA(let data):
             formData = data
             let cardDetails = CardDetails(cardNumber: data.cardNumber,

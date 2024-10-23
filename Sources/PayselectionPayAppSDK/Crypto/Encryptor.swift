@@ -32,7 +32,7 @@ public struct Encryptor {
     }
 
     private func encrypt(message: String, pubKey: String) throws -> String {
-        let messageBytes = [UInt8](message.data(using: .utf8)!)
+        let messageBytes = [UInt8](message.data(using: .utf8) ?? Data())
         let pubKeyBytes = Array(hex: pubKey)
 
         do {
@@ -102,7 +102,7 @@ public struct Encryptor {
         var error: Unmanaged<CFError>?
 
         guard let encryptedData = SecKeyCreateEncryptedData(publicKey, algorithm, messageData as CFData, &error) else {
-            debugPrint("Encryption error: \(error?.takeRetainedValue() as Error? ?? NSError())")
+            print("Encryption error: \(error?.takeRetainedValue() as Error? ?? NSError())")
             return nil
         }
 
@@ -134,7 +134,7 @@ public struct Encryptor {
         ]
         var error: Unmanaged<CFError>?
         guard let publicKey = SecKeyCreateWithData(publicKeyData as CFData, options as CFDictionary, &error) else {
-            print("Failed to create public key:", error?.takeRetainedValue())
+            print("Failed to create public sec key:", error?.takeRetainedValue() as Error? ?? NSError())
             return nil
         }
         return publicKey
