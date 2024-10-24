@@ -34,12 +34,12 @@ public struct AgentInfo: Codable {
 
 public struct PayingAgent: Codable {
     
-    public var operations: String?
+    public var operation: String?
     public var phones: [String]?
     
-    public init(operations: String? = nil,
+    public init(operation: String? = nil,
                 phones: [String]? = nil) {
-        self.operations = operations
+        self.operation = operation
         self.phones = phones
     }
 }
