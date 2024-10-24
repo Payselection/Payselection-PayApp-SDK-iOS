@@ -17,7 +17,7 @@ public class PayselectionAPI {
         self.merchantCreds = merchantCredentials
     }
 
-    public func pay(paymentForm: PaymentFormData,
+    public func pay(_ paymentForm: PaymentFormData,
                     completion: @escaping PayselectionRequestCompletion<PayResult>) {
         var paymentDetails: PaymentDetails? = nil
         // type
