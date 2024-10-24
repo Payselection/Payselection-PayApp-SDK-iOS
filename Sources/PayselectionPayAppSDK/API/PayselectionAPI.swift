@@ -12,7 +12,6 @@ public class PayselectionAPI {
     public typealias PayselectionRequestCompletion<T> = (Result<T, Error>) -> Void
 
     private let merchantCreds: MerchantCredentials
-    public var xReqId: String = ""
 
     public init(merchantCredentials: MerchantCredentials) {
         self.merchantCreds = merchantCredentials
@@ -112,7 +111,6 @@ public class PayselectionAPI {
         var headers = [String: String]()
         headers["X-SITE-ID"] = merchantId
         headers["X-REQUEST-ID"] = UUID().uuidString
-        xReqId = headers["X-REQUEST-ID"] ?? ""
 
         return headers
     }
