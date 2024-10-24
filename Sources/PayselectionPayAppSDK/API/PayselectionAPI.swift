@@ -17,114 +17,69 @@ public class PayselectionAPI {
         self.merchantCreds = merchantCredentials
     }
 
-    public func pay(_ paymentFormDataType: PaymentFormDataType,
-                              receiptType: ReceiptType? = nil,
-                               completion: @escaping PayselectionRequestCompletion<PayResult>) {
+    public func pay(paymentForm: PaymentFormData,
+                    completion: @escaping PayselectionRequestCompletion<PayResult>) {
         var paymentDetails: PaymentDetails? = nil
-        var formData: PaymentFormData!
-
         // type
-        switch paymentFormDataType {
-        case .cryptogram(let data):
-            formData = data
-            let cardDetails = CardDetails(cardNumber: data.cardNumber,
-                                          expMonth: data.cardExpMonth,
-                                          expYear: data.cardExpYear,
-                                          cardholderName: data.cardHolderName,
-                                          cvc: data.cvc)
-            let transactionDetails = TransactionDetails(amount: data.amount, currency: data.currency)
+        switch paymentForm.type {
+        case .cryptogram(let cardDetails):
+            let transactionDetails = TransactionDetails(amount: paymentForm.amount, currency: paymentForm.currency)
             let secretPaymentDetails = PaymentPrivateDetails(transactionDetails: transactionDetails,
                                                                   paymentMethod: .cryptogram,
                                                                  paymentDetails: cardDetails,
-                                                              messageExpiration: data.messageExpiration)
-            
-            guard let token = try? Encryptor().makeCryptogram(publicKey: merchantCreds.publicKey,
-                                                              privateDetails: secretPaymentDetails) else {
-                completion(.failure(PayselectionError.encryptionError))
-                return
+                                                              messageExpiration: paymentForm.messageExpiration)
+
+            do {
+                let token = try Encryptor().makeCryptogram(publicKey: merchantCreds.publicKey,
+                                                                  privateDetails: secretPaymentDetails)
+                paymentDetails = PaymentDetails(cryptogramValue: token)
+            } catch {
+                completion(.failure(error))
             }
-            paymentDetails = PaymentDetails(cryptogramValue: token)
-            break
-        case .token(let data):
-            formData = data
-            paymentDetails = PaymentDetails(tokenType: data.type.rawValue, tokenPay: data.payToken)
-            break
-        case .qr(let data):
-            formData = data
-            break
-        case .sberPay(let data):
-            formData = data
-            break
-        case .externalForm(let data):
-            formData = data
-            break
-        case .cryptogramRSA(let data):
-            formData = data
-            let cardDetails = CardDetails(cardNumber: data.cardNumber,
-                                          expMonth: data.cardExpMonth,
-                                          expYear: data.cardExpYear,
-                                          cardholderName: data.cardHolderName,
-                                          cvc: data.cvc)
-            let transactionDetails = TransactionDetails(amount: data.amount, currency: data.currency)
+        case .token(let tokenDetails):
+            paymentDetails = PaymentDetails(tokenType: tokenDetails.type.rawValue, tokenPay: tokenDetails.payToken)
+        case .cryptogramRSA(let cardDetails):
+            let transactionDetails = TransactionDetails(amount: paymentForm.amount, currency: paymentForm.currency)
             let secretPaymentDetails = PaymentPrivateDetails(transactionDetails: transactionDetails,
                                                                   paymentMethod: .cryptogramRSA,
                                                                  paymentDetails: cardDetails,
-                                                              messageExpiration: data.messageExpiration)
+                                                              messageExpiration: paymentForm.messageExpiration)
 
-            guard let token = Encryptor().makeCryptogramRSA(publicKey: merchantCreds.publicRSAKey, privateDetails: secretPaymentDetails) else {
-                completion(.failure(PayselectionError.encryptionError))
-                return
+            do {
+                let token = try Encryptor().makeCryptogramRSA(publicKey: merchantCreds.publicRSAKey, privateDetails: secretPaymentDetails)
+                paymentDetails = PaymentDetails(cryptogramValue: token)
+            } catch {
+                completion(.failure(error))
             }
-            paymentDetails = PaymentDetails(cryptogramValue: token)
+        default:
             break
         }
 
-        let paymentData = PaymentData(orderId: formData.orderId,
-                                      amount: formData.amount,
-                                      currency: formData.currency,
-                                      description: formData.description,
-                                      rebillFlag: formData.rebillFlag,
-                                      customerInfo: getCustomerInfo(formData.customerInfo),
-                                      extraData: formData.extraData,
-                                      paymentMethod: paymentFormDataType.paymentMethod,
+        let paymentData = PaymentData(orderId: paymentForm.orderId,
+                                      amount: paymentForm.amount,
+                                      currency: paymentForm.currency,
+                                      description: paymentForm.description,
+                                      rebillFlag: paymentForm.rebillFlag,
+                                      customerInfo: paymentForm.customerInfo,
+                                      extraData: paymentForm.extraData,
+                                      paymentMethod: paymentForm.type.paymentMethod,
+                                      receiptData: paymentForm.receiptData,
                                       paymentDetails: paymentDetails)
-        // With Receipt Type ( ffd1.05 or ffd1.2 )
-        if let receiptType {
-            switch receiptType {
-            case .ffd1_05(let timestamp, let externalId, let receipt):
-                let ffd1_05PaymentData = PaymentFFD1_05Data(paymentData: paymentData,
-                                                            receiptData: ReceiptFFD1_05Data(timestamp: timestamp,
-                                                                                            externalId: externalId,
-                                                                                            receipt: receipt))
-                request(ffd1_05PaymentData)
 
-            case .ffd1_2(let timestamp, let externalId, let receipt):
-                let ffd1_2PaymentData = PaymentFFD1_2Data(paymentData: paymentData,
-                                                          receiptData: ReceiptFFD1_2Data(timestamp: timestamp,
-                                                                                         externalId: externalId,
-                                                                                         receipt: receipt))
-                request(ffd1_2PaymentData)
-            }
-        } else {
-            request(paymentData)
-        }
-        
-        func request(_ data: Codable) {
-            guard let requestBodyString = self.getRequestBody(from: data) else { return }
+        guard let requestBodyString = self.getRequestBody(from: paymentData) else { return }
 
-            let headers = self.generatePayHeaders(merchantId: self.merchantCreds.merchantId,
-                                                  requestURL: PayselectionHTTPResource.pay.rawValue,
-                                                  requestBody: requestBodyString)
-            let request = PayRequest(path: self.merchantCreds.networkConfig.serverUrl, 
-                                     body: data,
-                                     headers: headers)
-            request.execute(
-                onSuccess: { result in
-                    completion(.success(result))
-                }, onError: { error in
-                    completion(.failure(error))
-            })
-        }
+        let headers = self.generatePayHeaders(merchantId: self.merchantCreds.merchantId,
+                                              requestURL: PayselectionHTTPResource.pay.rawValue,
+                                              requestBody: requestBodyString)
+        let request = PayRequest(path: self.merchantCreds.networkConfig.serverUrl,
+                                 body: paymentData,
+                                 headers: headers)
+        request.execute(
+            onSuccess: { result in
+                completion(.success(result))
+            }, onError: { error in
+                completion(.failure(error))
+        })
     }
 
     public func getTransactionStatus(transactionId: String,
@@ -156,7 +111,7 @@ public class PayselectionAPI {
         var headers = [String: String]()
         headers["X-SITE-ID"] = merchantId
         headers["X-REQUEST-ID"] = UUID().uuidString
-        
+
         return headers
     }
     
@@ -220,25 +175,7 @@ public class PayselectionAPI {
         return signatureString
     }
     
-    private func getCustomerInfo(_ customerInfo: CustomerInfo?) -> CustomerInfo {
-        guard let info = customerInfo, let _ = info.ip else {
-            let cInfo = CustomerInfo(email: customerInfo?.email,
-                                     receiptEmail: customerInfo?.receiptEmail,
-                                     isSendReceipt: customerInfo?.isSendReceipt,
-                                     phone: customerInfo?.phone,
-                                     language: customerInfo?.language,
-                                     address: customerInfo?.address,
-                                     town: customerInfo?.town,
-                                     zip: customerInfo?.zip,
-                                     country: customerInfo?.country,
-                                     ip: getIPAddress())
-            return cInfo
-        }
-        
-        return info
-    }
-    
-    private func getIPAddress() -> String {
+    private func getIPAddress() -> String? {
         var address: String?
         var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
         if getifaddrs(&ifaddr) == 0 {
@@ -264,7 +201,7 @@ public class PayselectionAPI {
             }
             freeifaddrs(ifaddr)
         }
-        return address ?? "10.0.42.42"
+        return address
     }
 }
 

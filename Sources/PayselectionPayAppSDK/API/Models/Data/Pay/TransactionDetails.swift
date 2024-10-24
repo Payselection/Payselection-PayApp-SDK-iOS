@@ -7,8 +7,7 @@
 
 import Foundation
 
-public struct TransactionDetails: Codable {
-    
+struct TransactionDetails: Codable {
     var amount: String
     var currency: String
     

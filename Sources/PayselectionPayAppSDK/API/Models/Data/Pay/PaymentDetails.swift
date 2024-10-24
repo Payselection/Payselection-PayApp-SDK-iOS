@@ -8,7 +8,7 @@
 import Foundation
 
 struct PaymentDetails: Codable {
-
+    
     // Cryptogram
     var cryptogramValue: String?
 

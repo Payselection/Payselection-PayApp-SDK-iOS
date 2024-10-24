@@ -8,7 +8,6 @@
 import Foundation
 
 public struct PayResult: Codable {
-    
     public var orderId: String
     public var transactionId: String
     public var amount: String
