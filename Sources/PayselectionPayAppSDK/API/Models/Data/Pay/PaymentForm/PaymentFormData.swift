@@ -8,12 +8,12 @@
 import Foundation
 
 public enum PaymentFormDataType {
-    case cryptogram(PaymentCryptogramFormData)
-    case token(PaymentTokenFormData)
-    case qr(PaymentFormData)
-    case sberPay(PaymentFormData)
-    case externalForm(PaymentFormData)
-    case cryptogramRSA(PaymentCryptogramFormData)
+    case cryptogram(CardDetails)
+    case token(PaymentTokenDetails)
+    case qr
+    case sberPay
+    case externalForm
+    case cryptogramRSA(CardDetails)
 
     var paymentMethod: PaymentMethod {
         switch self {
@@ -33,7 +33,8 @@ public enum PaymentFormDataType {
     }
 }
 
-public class PaymentFormData {
+public struct PaymentFormData {
+    public var type: PaymentFormDataType
     public var amount: String
     public var currency: String
     public var messageExpiration: String
@@ -44,7 +45,8 @@ public class PaymentFormData {
     public var extraData: ExtraData?
     public var rebillFlag: Bool?
 
-    public init(amount: String, 
+    public init(type: PaymentFormDataType,
+                amount: String,
                 currency: String,
                 messageExpiration: String,
                 orderId: String,
@@ -53,6 +55,7 @@ public class PaymentFormData {
                 receiptData: ReceiptData? = nil,
                 extraData: ExtraData? = nil,
                 rebillFlag: Bool? = nil) {
+        self.type = type
         self.amount = amount
         self.currency = currency
         self.messageExpiration = messageExpiration

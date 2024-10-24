@@ -13,5 +13,4 @@ public struct NetworkConfig {
     public init(serverUrl: String? = nil) {
         self.serverUrl = serverUrl ?? "https://pgw.payselection.com"
     }
-    
 }

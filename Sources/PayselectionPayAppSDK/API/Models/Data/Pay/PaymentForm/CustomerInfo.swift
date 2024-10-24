@@ -8,7 +8,6 @@
 import Foundation
 
 public struct CustomerInfo: Codable {
-
     public var email: String?
     public var receiptEmail: String?
     public var isSendReceipt: Bool?
