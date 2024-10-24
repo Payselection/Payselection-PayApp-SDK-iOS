@@ -17,5 +17,12 @@ public enum PayselectionError: Error {
     case unknownError
     case invalidURL
     case invalidResponse
-    case encryptionError
+    case encryptionError(EncryptionError)
+}
+
+public enum EncryptionError: Error {
+    case invalidKeyFormat
+    case invalidDataType
+    case algotithmIsNotSupported
+    case unknown
 }

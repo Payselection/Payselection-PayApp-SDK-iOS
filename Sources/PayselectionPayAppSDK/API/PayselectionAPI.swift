@@ -30,12 +30,13 @@ public class PayselectionAPI {
                                                                  paymentDetails: cardDetails,
                                                               messageExpiration: paymentForm.messageExpiration)
 
-            guard let token = try? Encryptor().makeCryptogram(publicKey: merchantCreds.publicKey,
-                                                              privateDetails: secretPaymentDetails) else {
-                completion(.failure(PayselectionError.encryptionError))
-                return
+            do {
+                let token = try Encryptor().makeCryptogram(publicKey: merchantCreds.publicKey,
+                                                                  privateDetails: secretPaymentDetails)
+                paymentDetails = PaymentDetails(cryptogramValue: token)
+            } catch {
+                completion(.failure(error))
             }
-            paymentDetails = PaymentDetails(cryptogramValue: token)
         case .token(let tokenDetails):
             paymentDetails = PaymentDetails(tokenType: tokenDetails.type.rawValue, tokenPay: tokenDetails.payToken)
         case .cryptogramRSA(let cardDetails):
@@ -45,11 +46,12 @@ public class PayselectionAPI {
                                                                  paymentDetails: cardDetails,
                                                               messageExpiration: paymentForm.messageExpiration)
 
-            guard let token = Encryptor().makeCryptogramRSA(publicKey: merchantCreds.publicRSAKey, privateDetails: secretPaymentDetails) else {
-                completion(.failure(PayselectionError.encryptionError))
-                return
+            do {
+                let token = try Encryptor().makeCryptogramRSA(publicKey: merchantCreds.publicRSAKey, privateDetails: secretPaymentDetails)
+                paymentDetails = PaymentDetails(cryptogramValue: token)
+            } catch {
+                completion(.failure(error))
             }
-            paymentDetails = PaymentDetails(cryptogramValue: token)
         default:
             break
         }
