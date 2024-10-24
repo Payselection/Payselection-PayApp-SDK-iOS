@@ -10,7 +10,7 @@ PaySelection PayApp SDK позволяет интегрировать прием
 
 ```
  dependencies: [
-  .package(url: "https://github.com/Payselection/Payselection-PayApp-SDK-iOS", from: "3.0.2"),
+  .package(url: "https://github.com/Payselection/Payselection-PayApp-SDK-iOS", from: "3.3.0"),
   ]
 ```
 
@@ -54,35 +54,50 @@ let api = PayselectionAPI(merchantCredentials: merchantCreds)
 
 ### Оплата с использованием Payselection SDK:
 
-1. Если необходимо, создайте экземпляр структуры CustomerInfo с информацией о клиенте.
+1. Cоздайте экземпляр структуры CustomerInfo с информацией о клиенте.
 
 ```
-let customerInfo = CustomerInfo(email: "customer@example.com")
+let customerInfo = CustomerInfo(email: "user@example.com",
+                                receiptEmail: "user@example.com", 
+                                isSendReceipt: true,
+                                phone: "+19991231212",
+                                language: "en",
+                                address: "string",
+                                town: "string",
+                                zip: "string",
+                                country: "USA",
+                                ip: "8.8.8.8",  // обязательное поле
+                                userId: "string")
 ```
 
 
-2. Создайте экземпляр структуры PaymentFormData с информацией о транзакции и данными карты, передав туда customerInfo, если требуется. Внимание! Необходимо валидировать передаваемые данные, иначе сервер вернет ошибку. Подробнее о форматах можно прочесть в документации  [Payselection API](https://api.payselection.com/#section/Request-signature).
+2. Создайте экземпляр структуры PaymentFormData с информацией о транзакции и данными карты, передав туда customerInfo, а также экземпляры ReceiptData и ExtraData, если требуется. Внимание! Необходимо валидировать передаваемые данные, иначе сервер вернет ошибку. Подробнее о форматах можно прочесть в документации  [Payselection API](https://api.payselection.com/#section/Request-signature).
 
 ```
  let messageExpiration = String(Int64(Date().timeIntervalSince1970 * 1000 + 86400000)) // 24 часа 
  
- let paymentFormData = PaymentCryptogramFormData(amount: "123",
-                                               currency: .rub,
-                                             cardNumber: "4129436949329530",
-                                           cardExpMonth: "06",
-                                            cardExpYear: "24",
-                                         cardHolderName: "Card Holder",
-                                                    cvc: "321",
-                                      messageExpiration: messageExpiration, // строковое значение времени в миллисекундах, пример получения указан выше
-                                                orderId: "",                // уникальный номер заказа. Можно использовать UUID().uuidString
-                                            description: "My Transaction",  // строка должна быть не пустой, иначе сервер вернет ошибку
-                                           customerInfo: customerInfo)
+ let cardDetails = CardDetails(cardNumber: "4129436949329530",
+                              expMonth: "01",
+                              expYear: "25",
+                              cardholderName: "Card Holder",
+                              cvc: "411")
+                              
+ let paymentFormData = PaymentFormData(type: .cryptogram(cardDetails),
+                                       amount: "123",
+                                       currency: "RUB",
+                                       messageExpiration: messageExpiration, // строковое значение времени в миллисекундах, пример получения указан выше
+                                       orderId: "", // уникальный номер заказа. Можно использовать UUID().uuidString,
+                                       description: "My Transaction",  // строка должна быть не пустой, иначе сервер вернет ошибку
+                                       customerInfo: customerInfo,
+                                       receiptData: receiptData,
+                                       extraData: extraData(),
+                                       rebillFlag: false)
 ```
 
 4. Вызовите метод pay
 
 ```
- api.pay(.cryptogram(paymentFormData)) { result in
+  api.pay(paymentFormData) { result in
             switch result {
             case .success(let payResult):
                 // в результате ответа приходят: transactionId, transactionSecretKey и redirectUrl
@@ -93,7 +108,6 @@ let customerInfo = CustomerInfo(email: "customer@example.com")
                 print(error)
             }
         }
-        //
 ```
 
 5. Отобразите WebView с полученной ссылкой на веб-интерфейс платежной системы (параметр "redirectUrl" возвращается в ответе метода "pay") удобным для вас способом. Для этого создайте объект класса ThreeDsProcessor:
