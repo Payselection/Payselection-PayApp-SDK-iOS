@@ -18,7 +18,7 @@ public struct CustomerInfo: Codable {
     public var town: String?
     public var zip: String?
     public var country: String?
-    public var ip: String?
+    public var ip: String
     public var userId: String?
 
     enum CodingKeys: String, CodingKey {
@@ -44,7 +44,7 @@ public struct CustomerInfo: Codable {
                 town: String? = nil,
                 zip: String? = nil,
                 country: String? = nil,
-                ip: String? = nil,
+                ip: String,
                 userId: String? = nil) {
         self.email = email
         self.receiptEmail = receiptEmail

@@ -12,16 +12,16 @@ public class PayselectionAPI {
     public typealias PayselectionRequestCompletion<T> = (Result<T, Error>) -> Void
 
     private let merchantCreds: MerchantCredentials
+    public var xReqId: String = ""
 
     public init(merchantCredentials: MerchantCredentials) {
         self.merchantCreds = merchantCredentials
     }
 
     public func pay(_ paymentFormDataType: PaymentFormDataType,
-                              receiptType: ReceiptType? = nil,
-                               completion: @escaping PayselectionRequestCompletion<PayResult>) {
+                    completion: @escaping PayselectionRequestCompletion<PayResult>) {
         var paymentDetails: PaymentDetails? = nil
-        var formData: PaymentFormData!
+        var formData: PaymentFormData
 
         // type
         switch paymentFormDataType {
@@ -44,20 +44,15 @@ public class PayselectionAPI {
                 return
             }
             paymentDetails = PaymentDetails(cryptogramValue: token)
-            break
         case .token(let data):
             formData = data
             paymentDetails = PaymentDetails(tokenType: data.type.rawValue, tokenPay: data.payToken)
-            break
         case .qr(let data):
             formData = data
-            break
         case .sberPay(let data):
             formData = data
-            break
         case .externalForm(let data):
             formData = data
-            break
         case .cryptogramRSA(let data):
             formData = data
             let cardDetails = CardDetails(cardNumber: data.cardNumber,
@@ -84,47 +79,27 @@ public class PayselectionAPI {
                                       currency: formData.currency,
                                       description: formData.description,
                                       rebillFlag: formData.rebillFlag,
-                                      customerInfo: getCustomerInfo(formData.customerInfo),
+                                      customerInfo: formData.customerInfo,
                                       extraData: formData.extraData,
                                       paymentMethod: paymentFormDataType.paymentMethod,
+                                      receiptData: formData.receiptData,
                                       paymentDetails: paymentDetails)
-        // With Receipt Type ( ffd1.05 or ffd1.2 )
-        if let receiptType {
-            switch receiptType {
-            case .ffd1_05(let timestamp, let externalId, let receipt):
-                let ffd1_05PaymentData = PaymentFFD1_05Data(paymentData: paymentData,
-                                                            receiptData: ReceiptFFD1_05Data(timestamp: timestamp,
-                                                                                            externalId: externalId,
-                                                                                            receipt: receipt))
-                request(ffd1_05PaymentData)
 
-            case .ffd1_2(let timestamp, let externalId, let receipt):
-                let ffd1_2PaymentData = PaymentFFD1_2Data(paymentData: paymentData,
-                                                          receiptData: ReceiptFFD1_2Data(timestamp: timestamp,
-                                                                                         externalId: externalId,
-                                                                                         receipt: receipt))
-                request(ffd1_2PaymentData)
-            }
-        } else {
-            request(paymentData)
-        }
         
-        func request(_ data: Codable) {
-            guard let requestBodyString = self.getRequestBody(from: data) else { return }
+        guard let requestBodyString = self.getRequestBody(from: paymentData) else { return }
 
-            let headers = self.generatePayHeaders(merchantId: self.merchantCreds.merchantId,
-                                                  requestURL: PayselectionHTTPResource.pay.rawValue,
-                                                  requestBody: requestBodyString)
-            let request = PayRequest(path: self.merchantCreds.networkConfig.serverUrl, 
-                                     body: data,
-                                     headers: headers)
-            request.execute(
-                onSuccess: { result in
-                    completion(.success(result))
-                }, onError: { error in
-                    completion(.failure(error))
-            })
-        }
+        let headers = self.generatePayHeaders(merchantId: self.merchantCreds.merchantId,
+                                              requestURL: PayselectionHTTPResource.pay.rawValue,
+                                              requestBody: requestBodyString)
+        let request = PayRequest(path: self.merchantCreds.networkConfig.serverUrl,
+                                 body: paymentData,
+                                 headers: headers)
+        request.execute(
+            onSuccess: { result in
+                completion(.success(result))
+            }, onError: { error in
+                completion(.failure(error))
+        })
     }
 
     public func getTransactionStatus(transactionId: String,
@@ -156,7 +131,8 @@ public class PayselectionAPI {
         var headers = [String: String]()
         headers["X-SITE-ID"] = merchantId
         headers["X-REQUEST-ID"] = UUID().uuidString
-        
+        xReqId = headers["X-REQUEST-ID"] ?? ""
+
         return headers
     }
     
@@ -220,23 +196,23 @@ public class PayselectionAPI {
         return signatureString
     }
     
-    private func getCustomerInfo(_ customerInfo: CustomerInfo?) -> CustomerInfo {
-        guard let info = customerInfo, let _ = info.ip else {
-            let cInfo = CustomerInfo(email: customerInfo?.email,
-                                     receiptEmail: customerInfo?.receiptEmail,
-                                     isSendReceipt: customerInfo?.isSendReceipt,
-                                     phone: customerInfo?.phone,
-                                     language: customerInfo?.language,
-                                     address: customerInfo?.address,
-                                     town: customerInfo?.town,
-                                     zip: customerInfo?.zip,
-                                     country: customerInfo?.country,
-                                     ip: getIPAddress())
-            return cInfo
-        }
-        
-        return info
-    }
+//    private func getCustomerInfo(_ customerInfo: CustomerInfo?) -> CustomerInfo {
+//        guard let info = customerInfo, let _ = info.ip else {
+//            let cInfo = CustomerInfo(email: customerInfo?.email,
+//                                     receiptEmail: customerInfo?.receiptEmail,
+//                                     isSendReceipt: customerInfo?.isSendReceipt,
+//                                     phone: customerInfo?.phone,
+//                                     language: customerInfo?.language,
+//                                     address: customerInfo?.address,
+//                                     town: customerInfo?.town,
+//                                     zip: customerInfo?.zip,
+//                                     country: customerInfo?.country,
+//                                     ip: getIPAddress())
+//            return cInfo
+//        }
+//        
+//        return info
+//    }
     
     private func getIPAddress() -> String {
         var address: String?

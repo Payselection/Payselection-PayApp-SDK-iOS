@@ -24,7 +24,7 @@ public class PaymentCryptogramFormData: PaymentFormData {
                 messageExpiration: String,
                 orderId: String,
                 description: String,
-                customerInfo: CustomerInfo? = nil,
+                customerInfo: CustomerInfo,
                 receiptData: ReceiptData? = nil,
                 extraData: ExtraData? = nil,
                 rebillFlag: Bool? = nil) {

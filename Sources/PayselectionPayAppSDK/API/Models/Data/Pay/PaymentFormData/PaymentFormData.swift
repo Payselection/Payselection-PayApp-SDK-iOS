@@ -8,12 +8,12 @@
 import Foundation
 
 public enum PaymentFormDataType {
-    case cryptogram(_ value: PaymentCryptogramFormData)
-    case token(_ value: PaymentTokenFormData)
-    case qr(_ value: PaymentQRFormData)
-    case sberPay(_ value: PaymentSberPayFormData)
-    case externalForm(_ value: PaymentExternalFormData)
-    case cryptogramRSA(_ value: PaymentCryptogramFormData)
+    case cryptogram(PaymentCryptogramFormData)
+    case token(PaymentTokenFormData)
+    case qr(PaymentFormData)
+    case sberPay(PaymentFormData)
+    case externalForm(PaymentFormData)
+    case cryptogramRSA(PaymentCryptogramFormData)
 
     var paymentMethod: PaymentMethod {
         switch self {
@@ -39,7 +39,7 @@ public class PaymentFormData {
     public var messageExpiration: String
     public var orderId: String
     public var description: String
-    public var customerInfo: CustomerInfo?
+    public var customerInfo: CustomerInfo
     public var receiptData: ReceiptData?
     public var extraData: ExtraData?
     public var rebillFlag: Bool?
@@ -49,10 +49,10 @@ public class PaymentFormData {
                 messageExpiration: String,
                 orderId: String,
                 description: String,
-                customerInfo: CustomerInfo?,
-                receiptData: ReceiptData?,
-                extraData: ExtraData?,
-                rebillFlag: Bool?) {
+                customerInfo: CustomerInfo,
+                receiptData: ReceiptData? = nil,
+                extraData: ExtraData? = nil,
+                rebillFlag: Bool? = nil) {
         self.amount = amount
         self.currency = currency
         self.messageExpiration = messageExpiration
