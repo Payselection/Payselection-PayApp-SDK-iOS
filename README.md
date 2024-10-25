@@ -90,7 +90,7 @@ let customerInfo = CustomerInfo(email: "user@example.com",
                                        description: "My Transaction",  // строка должна быть не пустой, иначе сервер вернет ошибку
                                        customerInfo: customerInfo,
                                        receiptData: receiptData,
-                                       extraData: extraData(),
+                                       extraData: extraData,
                                        rebillFlag: false)
 ```
 
