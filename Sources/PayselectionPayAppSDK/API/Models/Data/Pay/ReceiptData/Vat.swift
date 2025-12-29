@@ -25,5 +25,7 @@ public enum VatType: String, Codable {
     case vat10 = "vat10"
     case vat110 = "vat110"
     case vat20 = "vat20"
+    case vat22 = "vat22"
     case vat120 = "vat120"
+    case vat122 = "vat122"
 }
